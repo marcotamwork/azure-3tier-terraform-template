@@ -1,6 +1,6 @@
 # Storage
 resource "azurerm_storage_account" "example" {
-  name                     = "chubbrecruit${var.environment}storage"
+  name                     = "example${var.environment}storage"
   resource_group_name      = azurerm_resource_group.example.name
   location                 = azurerm_resource_group.example.location
   account_tier             = "Standard"
@@ -50,7 +50,7 @@ resource "azurerm_storage_account_customer_managed_key" "storage_key" {
 
 # Storage Blob Container
 resource "azurerm_storage_container" "example" {
-  name                  = "chubb-blob"
+  name                  = "example-blob"
   storage_account_name  = azurerm_storage_account.example.name
   container_access_type = "blob"
 
