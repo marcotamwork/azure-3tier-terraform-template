@@ -1,0 +1,53 @@
+workflow:
+  rules:
+    - if: "$CI_COMMIT_TAG =~ /v[0-9.]+-[0-9.]+-prod$/"
+      variables:
+        ENV: Production
+        TF_ENV: prod
+
+stages:
+  - validate
+  - plan
+  - apply
+
+variables:
+  ARM_CLIENT_ID: ${ARM_CLIENT_ID}
+  ARM_CLIENT_SECRET: ${ARM_CLIENT_SECRET}
+  ARM_SUBSCRIPTION_ID: ${ARM_SUBSCRIPTION_ID}
+  ARM_TENANT_ID: ${ARM_TENANT_ID}
+
+default:
+  image:
+    name: hashicorp/terraform:latest
+    entrypoint:
+      - /usr/bin/env
+      - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  before_script:
+    - echo $ARM_CLIENT_ID
+    - terraform init
+  cache:
+    key: terraform
+    paths:
+      - .terraform
+
+terraform_validate:
+  stage: validate
+  script:
+    - terraform validate
+
+terraform_plan:
+  stage: plan
+  script: |
+    terraform plan -var-file="./environments/prod.tfvars" --out plan
+  artifacts:
+    paths:
+      - plan
+
+terraform_apply:
+  stage: apply
+  script:
+    - terraform apply --auto-approve plan
+  when: manual
+  allow_failure: false
+  only:
+    - /v[0-9.]+-[0-9.]+-prod$/
